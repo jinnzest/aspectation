@@ -1,10 +1,18 @@
-This is a system to develop software called Aspectation. 
-It has been impmelented following a programming paradigm described in MultiLanguage Manifesto (https://github.com/jinnzest/multilanguage-manifesto).
+This is a system for software development called Aspectation. 
+It has been implemented following a programming paradigm described in the MultiLanguage Manifesto (https://github.com/jinnzest/multilanguage-manifesto).
 
-Aspectation MultiLanguage is dual-licensed under Apache 2.0 and MIT.
+Aspectation MultiLanguage is dual-licensed under Apache 2.0 and MIT. 
+See LICENSE-APACHE and LICENSE-MIT for details.
 
-See LICENSE-APACHE, LICENSE-MIT, and COPYRIGHT for details.
+# Setting up a developer environment:
 
-Setting up a developer environment:
+1. install Ormolu formatter: https://hackage.haskell.org/package/ormolu
 
-1. install ormolu formatter: https://hackage.haskell.org/package/ormolu
+
+# Publishing
+
+Execute:
+
+1. `scripts/format.sh`
+2. `stack test`
+4. `git push origin branch-name:branch-name`

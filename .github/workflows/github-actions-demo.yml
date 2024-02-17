@@ -1,0 +1,18 @@
+name: CI
+on: 
+  push: 
+    branches: [main, develop]
+  pull_request: 
+    branches: [develop]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      -  uses: actions/checkout@v4
+      -  uses: freckle/stack-action@v5
+      - run: echo "Triggered by user ${{ github.actor }}"
+      - run: echo "Branch name is ${{ github.ref }}"
+      - name: Building Aspectation MultiLanguage
+        run: |
+          stack test
+      - run: echo "The job's status is ${{ job.status }}."
