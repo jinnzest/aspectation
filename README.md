@@ -7,7 +7,7 @@ See LICENSE-APACHE and LICENSE-MIT for details.
 # Setting up a developer environment:
 
 1. install Ormolu formatter: https://hackage.haskell.org/package/ormolu
-
+2. install hlint: https://hackage.haskell.org/package/hlint
 
 # Publishing
 
