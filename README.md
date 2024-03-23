@@ -13,8 +13,15 @@ See LICENSE-APACHE and LICENSE-MIT for details.
 
 # Publishing
 
-Execute:
-
 1. `scripts/format.sh`
 2. `stack test`
 4. `git push origin branch-name:branch-name`
+
+# Running syntax parser of the main language
+
+stack run `path-to-source-file`
+where file_name - path to a file containing source code of the main language
+example: `stack run project/snippets.astn`
+
+To print coordinates of each item add `A_LOC=True` at the beginning
+example: `A_LOC=True stack run project/snippets.astn`
