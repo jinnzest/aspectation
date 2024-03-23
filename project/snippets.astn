@@ -1,0 +1,49 @@
+bool -> :: true | false
+
+int arr () -> :: arr : ... int
+
+tree -> :: empty | node _ tree tree
+
+either -> :: left _ | right _
+
+
+person -> :: person : 
+	name 
+	(last name)
+	... address
+
+employee -> :: employee address ... person
+
+while cond body -> 
+	cond ?
+		true -> 
+			***body
+			***cond
+			while newCond body
+		false -> _
+	***
+
+maybe -> :: nothing | just _
+
+nothing  >>= f -> nothing
+(just x) >>= f -> f x
+return         -> just
+
+kleisli f g = x -> f x >>= g
+
+some function -> fs
+
+h : t -> 
+    (list constructor) h tail
+
+(first argument)
+    +
+    (second argument) -> () 
+
+if cond body ->
+    cond?
+        true -> body
+        false -> ()
+
+define maybe (a) -> :: nothing | just a
+

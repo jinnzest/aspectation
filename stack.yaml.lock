@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: mr-env-0.1.0.5@sha256:9e5d001fc4d61db731d87cab9be1b415f7f76a5ed9b22cb15ab228a0efc9d5a2,1053
+    pantry-tree:
+      sha256: 12a7db5ae9ff1d5fe898faf4dfabc157e6e1545ffc70aa8b3eb8c8f067c04aaa
+      size: 376
+  original:
+    hackage: mr-env-0.1.0.5
 snapshots:
 - completed:
     sha256: a81fb3877c4f9031e1325eb3935122e608d80715dc16b586eb11ddbff8671ecd

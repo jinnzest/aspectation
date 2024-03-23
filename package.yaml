@@ -1,5 +1,5 @@
 name: aspectation
-version: 0.0.0.0
+version: 0.1.0.0
 github: githubuser/aspectation
 license-file: [LICENSE-MIT, LICENSE-APACHE]
 author: jinnzest
@@ -9,9 +9,20 @@ extra-source-files:
 - README.md
 - ChangeLog.md
 description: Please see the README on GitHub at <https://github.com/githubuser/aspectation-#readme>
-default-extensions: RankNTypes, NoImplicitPrelude, OverloadedStrings , NamedFieldPuns, RecursiveDo, DeriveGeneric, TupleSections, PackageImports, FlexibleInstances, QuasiQuotes, DerivingVia, LambdaCase, StandaloneKindSignatures
+default-extensions: RankNTypes, NoImplicitPrelude, OverloadedStrings , NamedFieldPuns, RecursiveDo, DeriveGeneric, TupleSections, PackageImports, FlexibleInstances, QuasiQuotes, DerivingVia, LambdaCase, StandaloneKindSignatures, MultiWayIf
 dependencies:
 - base
+- megaparsec
+- text
+- mtl
+- directory
+- utf8-string
+- mr-env
+- shakespeare
+- aeson
+- aeson-yaml
+- deriving-aeson
+- extra
 library:
     source-dirs:
         - src
@@ -26,7 +37,7 @@ library:
         - -Wno-all-missed-specialisations
         - -Wno-missed-specialisations
 executables:
-    sds:
+    aspectation:
         main: Main.hs
         source-dirs: app
         ghc-options:
@@ -44,7 +55,6 @@ executables:
             - -Wno-unused-packages
         dependencies:
             - aspectation
-            - text
 tests:
     aspectation-test:
         main: AllTests.hs
@@ -64,5 +74,9 @@ tests:
             - -Wno-missed-specialisations
             - -Wno-unused-packages
         dependencies:
+        - aspectation
         - tasty
+        - tasty-hunit
+        - tasty-quickcheck
+        - quickcheck-instances
 
