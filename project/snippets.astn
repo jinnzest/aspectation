@@ -1,0 +1,165 @@
+bool -> # bool ? true | false
+
+(x) | (y) -> 
+	x 
+	y
+
+data tn (=()) tb -> # tn ? tb
+
+data bool = true | false
+
+types ->
+	# bool ? true false
+	# address ?
+		street txt
+		num txt
+		city txt
+
+
+address {
+		s <- street
+	} <-  value
+
+address 
+	s <- street 
+	_ _
+		<- 
+
+int arr () -> :: arr : ... int
+
+tree -> :: empty | node _ tree tree
+
+either -> :: left _ | right _
+
+
+person -> :: person : 
+	name 
+	(last name)
+	... address
+
+employee -> :: employee address ... person
+
+while cond body -> 
+	cond ?
+		true -> 
+			***body
+			***cond
+			while newCond body
+		false -> _
+	***
+
+maybe -> :: nothing | just _
+
+nothing  >>= f -> nothing
+(just x) >>= f -> f x
+return         -> just
+
+kleisli f g = x -> f x >>= g
+
+some function -> fs
+
+h : t -> 
+    (list constructor) h tail
+
+(first parameter)
+    +
+    (second parameter) -> () 
+
+if cond body ->
+    cond?
+        true -> body
+        false -> ()
+
+define maybe (a) -> :: nothing | just a
+
+
+f ->
+	logger <- ??? Logger _
+	log logger "starting calculation" 
+
+map {f _} -> ...
+
+
+f -> map {x -> ...}
+
+= -> ()
+
+
+
+data n f@(=) b@{_} -> # n ? b
+
+
+
+# -> 
+	data bool = {
+		true 
+		false
+	}
+
+# -> 
+	my_type ?
+		int ? txt
+	person ?
+		name txt
+		surname txt
+	person ?
+		person_fields ? txt
+
+
+rec a b c d 
+arr 0 1 2 3
+
+
+f -> v ? 
+	 a@arr ?
+	 	5 _ v -> 
+
+f -> v ? 
+	 a@arr  ?
+	 	_ i v -> 
+
+
+f -> v ?
+	a@person ?
+		_ n v ->  
+
+f -> v ?
+	(person
+		n@name
+		s@surname
+		) ->  
+
+f -> v ?
+	p@(person n@name s@surname) ->  
+
+f -> v ?
+	(a@arr
+		4 a
+		6 b) ->  
+
+f -> v ?
+	arr _ 4 a 6 b -> 
+
+f (_ + _) x y->  x+y
+
+f2 ->  f (a b -> sum a b)
+
+Person{name=n, surname=s} -> 
+
+class_name {fields} ->   
+
+(f _ _) => -> f class_name fields
+
+case v of 
+	ca@constr {fld1=f1, fld2=f2} -> b1
+	c2 -> b2
+
+
+v ? 
+	constr ca fld1 f1 fld2 f2 -> b1
+
+f -> 
+	r1 <- f1
+	r2 <- f2
+	
+

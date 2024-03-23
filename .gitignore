@@ -2,3 +2,5 @@
 *.log
 .stack-work
 *.cabal
+dist-newstyle
+.idea

@@ -1,0 +1,1 @@
+stack test | sed $'s/\\\\n/\\n/g; s/\\\\t/\\t/g'
