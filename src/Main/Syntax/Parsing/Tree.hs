@@ -65,7 +65,7 @@ newtype FunctionBody = FunctionBody (Ranged [Expression])
   deriving (ToJSON) via Vanilla FunctionBody
 
 type FunctionSignatureItem :: Type
-data FunctionSignatureItem = FunctionName [Expression] | FunctionArgument Expression
+data FunctionSignatureItem = FunctionName Expression | FunctionArgument Expression
   deriving stock (Eq, Generic)
   deriving (ToJSON) via Vanilla FunctionSignatureItem
 

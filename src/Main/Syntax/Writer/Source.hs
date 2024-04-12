@@ -10,7 +10,7 @@ import Data.Foldable (Foldable (foldl))
 import Data.Function (($))
 import Data.List (map, reverse)
 import Data.Maybe (maybe)
-import Data.Text as T (Text, concat, pack, unpack)
+import Data.Text as T (Text, pack, unpack)
 import Main.Syntax.Parsing.Tree
   ( Expression
       ( AlphaNumExpr,
@@ -46,7 +46,7 @@ writeSingleRanged = writeRangedWith id
 
 writeFunctionSignatureItem :: FunctionSignatureItem -> Text
 writeFunctionSignatureItem (FunctionArgument arg) = writeExpression arg
-writeFunctionSignatureItem (FunctionName names) = T.concat $ map writeExpression names
+writeFunctionSignatureItem (FunctionName name) = writeExpression name
 
 writeSignature :: FunctionSignature -> Text
 writeSignature (FunctionSignature constructs) = mconcat $ map writeFunctionSignatureItem constructs

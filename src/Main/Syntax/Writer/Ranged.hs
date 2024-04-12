@@ -68,10 +68,10 @@ writeSingleWord :: Int -> Text -> Text
 writeSingleWord ind word = [st|#{nL}#{indent ind}#{word}|]
 
 writeSignatureItem :: Int -> Int -> FunctionSignatureItem -> Int -> (Int, Int, Text)
-writeSignatureItem nameNum argNum (FunctionName expressions) ind =
+writeSignatureItem nameNum argNum (FunctionName expression) ind =
   ( nameNum - 1,
     argNum,
-    let functionNameText = T.concat $ map (\e -> writeExpression e (ind + 1)) expressions
+    let functionNameText = writeExpression expression (ind + 1)
      in [st|#{nL}#{indent ind}name #{nameNum}#{functionNameText}|]
   )
 writeSignatureItem nameNum argNum (FunctionArgument expression) ind =

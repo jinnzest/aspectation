@@ -162,10 +162,13 @@ syntaxParserTests =
             |		name 1
             |			1:1 - 1:2 alpha numberic word
             |				a
+            |		name 2
             |			1:3 - 1:13 alpha numberic word
             |				mutliwords
+            |		name 3
             |			1:14 - 1:22 alpha numberic word
             |				function
+            |		name 4
             |			1:23 - 1:27 alpha numberic word
             |				with
             |		argument 1
@@ -176,7 +179,7 @@ syntaxParserTests =
             |					argument
             |				1:41 - 1:44 alpha numberic word
             |					one
-            |		name 2
+            |		name 5
             |			1:46 - 1:49 alpha numberic word
             |				and
             |		argument 2
@@ -187,7 +190,7 @@ syntaxParserTests =
             |					argument
             |				1:63 - 1:66 alpha numberic word
             |					two
-            |		name 3
+            |		name 6
             |			1:68 - 1:74 alpha numberic word
             |				inside
             |	1:75 - 1:89 function body
@@ -1488,6 +1491,7 @@ syntaxParserTests =
             |		name 1
             |			1:1 - 1:2 alpha numberic word
             |				a
+            |		name 2
             |			new line
             |			2:9 - 2:17 alpha numberic word
             |				functioN

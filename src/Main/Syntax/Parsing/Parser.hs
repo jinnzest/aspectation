@@ -117,12 +117,9 @@ idText :: Parser Text
 idText = hidden (pack <$> some idChar) <?> "an identifier"
 
 exprToFuncSig :: Expression -> [FunctionSignatureItem] -> [FunctionSignatureItem]
-exprToFuncSig expr@(AlphaNumExpr _) ((FunctionName fn) : acc) = FunctionName (expr : fn) : acc
-exprToFuncSig expr@(AlphaNumExpr _) [] = [FunctionName [expr]]
-exprToFuncSig expr@(NonAlphaNumExpr _) [] = [FunctionName [expr]]
-exprToFuncSig expr@(AlphaNumExpr _) acc@((FunctionArgument _) : _) = FunctionName [expr] : acc
-exprToFuncSig expr@(NonAlphaNumExpr _) ((FunctionName fn) : acc) = FunctionName (expr : fn) : acc
-exprToFuncSig expr@(NonAlphaNumExpr _) acc@((FunctionArgument _) : _) = FunctionName [expr] : acc
+exprToFuncSig expr@(AlphaNumExpr _) acc = FunctionName expr : acc
+exprToFuncSig expr@(NonAlphaNumExpr _) [] = [FunctionName expr]
+exprToFuncSig expr@(NonAlphaNumExpr _) acc = FunctionName expr : acc
 exprToFuncSig expr@(NumberExpr _) acc = FunctionArgument expr : acc
 exprToFuncSig expr@(TextExpr _) acc = FunctionArgument expr : acc
 exprToFuncSig expr@(HigherPriorityExpr _) acc = FunctionArgument expr : acc
@@ -240,7 +237,7 @@ funcSigItems =
     tailExprs <- many $ funcSigExpr Indented
     let exprs = headExpr : tailExprs
     if all withoutBrackets exprs
-      then return $ FunctionName [headExpr] : map FunctionArgument tailExprs
+      then return $ FunctionName headExpr : map FunctionArgument tailExprs
       else return $ foldr exprToFuncSig [] exprs
 
 funcSig :: Parser FunctionSignature

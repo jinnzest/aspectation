@@ -72,7 +72,7 @@ syntaxRangedWriterTests =
         "write a function without args which returns an identifier"
         [ mkRanged 1 2 7 8 $
             Function
-              { fSignature = FunctionSignature [FunctionName [AlphaNumExpr $ mkRanged 1 2 3 4 "Name"]],
+              { fSignature = FunctionSignature [FunctionName $ AlphaNumExpr $ mkRanged 1 2 3 4 "Name"],
                 fBody = FunctionBody $ mkRanged 5 6 7 8 [AlphaNumExpr $ mkRanged 5 6 7 8 "id"]
               }
         ]
@@ -92,9 +92,7 @@ syntaxRangedWriterTests =
             Function
               { fSignature =
                   FunctionSignature
-                    [ FunctionName
-                        [ AlphaNumExpr $ mkRanged 1 2 3 4 "Name"
-                        ],
+                    [ FunctionName $ AlphaNumExpr $ mkRanged 1 2 3 4 "Name",
                       FunctionArgument $ AlphaNumExpr $ mkRanged 5 6 7 8 "Arg"
                     ],
                 fBody = FunctionBody $ mkRanged 13 14 15 16 [AlphaNumExpr $ mkRanged 9 10 11 12 "1"]
@@ -120,9 +118,8 @@ syntaxRangedWriterTests =
               { fSignature =
                   FunctionSignature
                     [ FunctionName
-                        [ AlphaNumExpr $ mkRanged 1 2 3 4 "Name1",
-                          AlphaNumExpr $ mkRanged 5 6 7 8 "Name2"
-                        ],
+                        $ AlphaNumExpr $ mkRanged 1 2 3 4 "Name1",
+                         FunctionName $ AlphaNumExpr $ mkRanged 5 6 7 8 "Name2",
                       FunctionArgument $ AlphaNumExpr $ mkRanged 9 10 11 12 "Arg1",
                       FunctionArgument $ AlphaNumExpr $ mkRanged 13 14 15 16 "Arg2"
                     ],
@@ -135,6 +132,7 @@ syntaxRangedWriterTests =
             |		name 1
             |			1:2 - 3:4 alpha numberic word
             |				Name1
+            |		name 2
             |			5:6 - 7:8 alpha numberic word
             |				Name2
             |		argument 1
@@ -153,7 +151,7 @@ syntaxRangedWriterTests =
             Function
               { fSignature =
                   FunctionSignature
-                    [ FunctionName [AlphaNumExpr $ mkRanged 1 2 3 4 "Name"],
+                    [ FunctionName $ AlphaNumExpr $ mkRanged 1 2 3 4 "Name",
                       FunctionArgument $ AlphaNumExpr $ mkRanged 5 6 7 8 "Arg1",
                       FunctionArgument $ AlphaNumExpr $ mkRanged 9 10 11 12 "Arg2"
                     ],
@@ -201,7 +199,7 @@ syntaxRangedWriterTests =
         "write a function without args which contains nested expressions"
         [ mkRanged 1 2 23 24 $
             Function
-              { fSignature = FunctionSignature [FunctionName [AlphaNumExpr $ mkRanged 1 2 3 4 "Name"]],
+              { fSignature = FunctionSignature [FunctionName $ AlphaNumExpr $ mkRanged 1 2 3 4 "Name"],
                 fBody =
                   FunctionBody $
                     mkRanged
@@ -239,7 +237,7 @@ syntaxRangedWriterTests =
         "write a function without args which contains higher priority expressions"
         [ mkRanged 1 2 23 24 $
             Function
-              { fSignature = FunctionSignature [FunctionName [AlphaNumExpr $ mkRanged 1 2 3 4 "Name"]],
+              { fSignature = FunctionSignature [FunctionName $ AlphaNumExpr $ mkRanged 1 2 3 4 "Name"],
                 fBody =
                   FunctionBody $
                     mkRanged
