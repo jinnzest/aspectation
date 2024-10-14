@@ -96,11 +96,11 @@ specChar =
 underscoreChar :: Parser Char
 underscoreChar = char '_'
 
-specBodyText :: Indent -> Parser (Ranged Text)
-specBodyText indent = ranged indent (pack <$> some specChar)
+specBodyWord :: Indent -> Parser (Ranged Text)
+specBodyWord indent = ranged indent (pack <$> some specChar)
 
-specSigText :: Indent -> Parser (Ranged Text)
-specSigText indent =
+specSigWord :: Indent -> Parser (Ranged Text)
+specSigWord indent =
   ranged
     indent
     ( pack <$> do
@@ -113,8 +113,8 @@ specSigText indent =
 idChar :: Parser Char
 idChar = try alphaNumChar <|> try underscoreChar
 
-idText :: Parser Text
-idText = hidden (pack <$> some idChar) <?> "an identifier"
+idWord :: Parser Text
+idWord = hidden (pack <$> some idChar) <?> "an identifier"
 
 exprToFuncSig :: Expression -> [FunctionSignatureItem] -> [FunctionSignatureItem]
 exprToFuncSig expr@(AlphaNumExpr _) acc = FunctionName expr : acc
@@ -175,13 +175,13 @@ textExpr indent =
       )
 
 alNumExpr :: Indent -> Parser Expression
-alNumExpr indent = dbg "alNumExpr" $ AlphaNumExpr <$> (hidden (ranged indent idText) <?> "an identifier")
+alNumExpr indent = dbg "alNumExpr" $ AlphaNumExpr <$> (hidden (ranged indent idWord) <?> "an identifier")
 
 specBodyExpr :: Indent -> Parser Expression
-specBodyExpr indent = NonAlphaNumExpr <$> (hidden (specBodyText indent) <?> "an identifier")
+specBodyExpr indent = NonAlphaNumExpr <$> (hidden (specBodyWord indent) <?> "an identifier")
 
 specSigExpr :: Indent -> Parser Expression
-specSigExpr indent = NonAlphaNumExpr <$> (hidden (specSigText indent) <?> "an identifier")
+specSigExpr indent = NonAlphaNumExpr <$> (hidden (specSigWord indent) <?> "an identifier")
 
 bodyExprs :: Parser [Expression]
 bodyExprs = many bodyExpr
