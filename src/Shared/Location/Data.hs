@@ -44,7 +44,7 @@ data Ranged a = Ranged
   }
   deriving stock (Eq, Ord, Generic)
 
-instance ToJSON a => ToJSON (Ranged a) where
+instance (ToJSON a) => ToJSON (Ranged a) where
   toJSON Ranged {rItem = i, range = r} =
     if locEnabled
       then object ["rItem" .= i, "range" .= r]
@@ -59,7 +59,7 @@ data OcRanged a = OcRanged
   }
   deriving stock (Eq, Ord, Generic)
 
-instance ToJSON a => ToJSON (OcRanged a) where
+instance (ToJSON a) => ToJSON (OcRanged a) where
   toJSON OcRanged {ocItem = i, ocRange = r, oSpaces = os, cSpaces = cs} =
     if locEnabled
       then object ["ocItem" .= i, "ocRange" .= r, "oSpaces" .= os, "cSpaces" .= cs]
@@ -71,10 +71,10 @@ instance Show Position where
 instance Show Range where
   show = showYaml
 
-instance ToJSON a => Show (Ranged a) where
+instance (ToJSON a) => Show (Ranged a) where
   show = showYaml
 
-instance ToJSON a => Show (OcRanged a) where
+instance (ToJSON a) => Show (OcRanged a) where
   show = showYaml
 
 instance ToText Position where
@@ -83,8 +83,8 @@ instance ToText Position where
 instance ToText Range where
   toText Range {from = f, to = t} = toText [st|#{f} - #{t}|]
 
-instance ToText a => ToText (Ranged a) where
+instance (ToText a) => ToText (Ranged a) where
   toText Ranged {rItem = i, range = r} = toText [st|#{r} #{i}|]
 
-instance ToText a => ToText (OcRanged a) where
+instance (ToText a) => ToText (OcRanged a) where
   toText OcRanged {ocItem = i, ocRange = r} = toText [st|#{r} #{i}|]

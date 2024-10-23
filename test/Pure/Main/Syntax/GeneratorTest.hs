@@ -69,7 +69,6 @@ genNonAlphaNumWord = do
           return '!',
           return '@',
           return '$',
-          return '_',
           return '`',
           return '\\'
         ]
@@ -100,7 +99,7 @@ genSpaces =
 genAlphaNumWord :: Gen Text
 genAlphaNumWord = do
   alphaSize <- genSize
-  head <- vectorOf alphaSize $ elements (['A' .. 'Z'] ++ ['a' .. 'z'])
+  head <- vectorOf alphaSize $ elements ('_' : (['A' .. 'Z'] ++ ['a' .. 'z']))
   numericSize <- elements [0 .. 1]
   tail <- vectorOf numericSize $ elements ['0' .. '9']
   return $ pack $ head ++ tail

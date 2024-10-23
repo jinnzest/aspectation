@@ -117,9 +117,10 @@ syntaxRangedWriterTests =
             Function
               { fSignature =
                   FunctionSignature
-                    [ FunctionName
-                        $ AlphaNumExpr $ mkRanged 1 2 3 4 "Name1",
-                         FunctionName $ AlphaNumExpr $ mkRanged 5 6 7 8 "Name2",
+                    [ FunctionName $
+                        AlphaNumExpr $
+                          mkRanged 1 2 3 4 "Name1",
+                      FunctionName $ AlphaNumExpr $ mkRanged 5 6 7 8 "Name2",
                       FunctionArgument $ AlphaNumExpr $ mkRanged 9 10 11 12 "Arg1",
                       FunctionArgument $ AlphaNumExpr $ mkRanged 13 14 15 16 "Arg2"
                     ],

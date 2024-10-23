@@ -89,7 +89,6 @@ specChar =
     <|> char '!'
     <|> char '@'
     <|> char '$'
-    <|> char '_'
     <|> char '`'
     <|> char '\\'
 
