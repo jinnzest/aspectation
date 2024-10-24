@@ -6,14 +6,16 @@ where
 
 import Control.Applicative ((<$>))
 import Control.Monad (Monad (return), void, when)
-import Data.Bool (Bool (False, True))
+import Control.Monad.Except (MonadFail (fail))
+import Data.Bool (Bool (False, True), (&&))
 import Data.Char (Char)
 import Data.Eq (Eq ((==)))
 import Data.Function (($))
 import Data.Functor (($>))
-import Data.List (map)
+import Data.List (length, map)
 import Data.List as L (all, foldr)
 import Data.Maybe (Maybe (Just))
+import Data.Ord (Ord ((>)))
 import Data.Text as T (Text, pack)
 import GHC.Num.Integer (Integer)
 import Main.Syntax.Parsing.Nesting (mkNestedExprs)
@@ -34,9 +36,10 @@ import Main.Syntax.Parsing.Tree
   )
 import Shared.Conditional.Debug.Parse (dbg)
 import Shared.Location.Data
-  ( Position (line),
+  ( OcRanged (ocItem),
+    Position (line),
     Range (from),
-    Ranged (range),
+    Ranged (Ranged, rItem, range),
   )
 import Shared.Location.Location
   ( Indent (Indented, NotIndented),
@@ -194,11 +197,18 @@ higherPriorityBodyExpr indent =
 alNumExprs :: Parser [Expression]
 alNumExprs = many $ try $ alNumExpr Indented
 
+isAlNumExpr :: Expression -> Bool
+isAlNumExpr (AlphaNumExpr (Ranged {rItem = "_"})) = True
+isAlNumExpr _ = False
+
 higherPrioritySigExpr :: Indent -> Parser Expression
 higherPrioritySigExpr indent =
-  dbg "higherPrioritySigExpr" $
-    HigherPriorityExpr
-      <$> ocRanged indent alNumExprs
+  dbg "higherPrioritySigExpr" $ do
+    rangedExprs <- ocRanged indent alNumExprs
+    let exprs = ocItem rangedExprs
+    if all isAlNumExpr exprs && (length exprs > 1)
+      then fail "multiple underscore characters without non underscore words are not allowed"
+      else return $ HigherPriorityExpr rangedExprs
 
 funcSigExpr :: Indent -> Parser Expression
 funcSigExpr indent =

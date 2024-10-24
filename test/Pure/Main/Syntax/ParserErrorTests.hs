@@ -137,5 +137,14 @@ syntaxParserErrorTests =
         |      1 |  x
         |        |  ^
         |      incorrect indentation (got 2, should be equal to 1)
+        |],
+      testCaseParseError
+        "f (_ _)"
+        [sbt|1:3:
+        |        |
+        |      1 |  f (_ _)
+        |        |    ^^
+        |      unexpected "(_"
+        |      expecting "->", carriage return, newline, space, or tab
         |]
     ]
