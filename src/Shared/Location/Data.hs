@@ -9,6 +9,7 @@ where
 import Data.Aeson ((.=))
 import Data.Aeson.Types (ToJSON (toJSON), object)
 import Data.Eq (Eq)
+import Data.Hashable (Hashable)
 import Data.Int (Int)
 import Data.Kind (Type)
 import Data.Ord (Ord)
@@ -28,6 +29,8 @@ data Position = Position
   deriving stock (Eq, Ord, Generic)
   deriving (ToJSON) via Vanilla Position
 
+instance Hashable Position
+
 type Range :: Type
 data Range = Range
   { from :: Position,
@@ -35,6 +38,8 @@ data Range = Range
   }
   deriving stock (Eq, Ord, Generic)
   deriving (ToJSON) via Vanilla Range
+
+instance Hashable Range
 
 type Ranged :: Type -> Type
 data Ranged a = Ranged
@@ -44,10 +49,12 @@ data Ranged a = Ranged
   }
   deriving stock (Eq, Ord, Generic)
 
-instance ToJSON a => ToJSON (Ranged a) where
-  toJSON Ranged {rItem = i, range = r} =
+instance (Hashable a) => Hashable (Ranged a)
+
+instance (ToJSON a) => ToJSON (Ranged a) where
+  toJSON Ranged {rItem = i, range = r, rSpaces = s} =
     if locEnabled
-      then object ["rItem" .= i, "range" .= r]
+      then object ["rItem" .= i, "range" .= r, "rSpaces" .= s]
       else object ["rItem" .= i]
 
 type OcRanged :: Type -> Type
@@ -59,7 +66,9 @@ data OcRanged a = OcRanged
   }
   deriving stock (Eq, Ord, Generic)
 
-instance ToJSON a => ToJSON (OcRanged a) where
+instance (Hashable a) => Hashable (OcRanged a)
+
+instance (ToJSON a) => ToJSON (OcRanged a) where
   toJSON OcRanged {ocItem = i, ocRange = r, oSpaces = os, cSpaces = cs} =
     if locEnabled
       then object ["ocItem" .= i, "ocRange" .= r, "oSpaces" .= os, "cSpaces" .= cs]
@@ -71,10 +80,10 @@ instance Show Position where
 instance Show Range where
   show = showYaml
 
-instance ToJSON a => Show (Ranged a) where
+instance (ToJSON a) => Show (Ranged a) where
   show = showYaml
 
-instance ToJSON a => Show (OcRanged a) where
+instance (ToJSON a) => Show (OcRanged a) where
   show = showYaml
 
 instance ToText Position where
@@ -83,8 +92,8 @@ instance ToText Position where
 instance ToText Range where
   toText Range {from = f, to = t} = toText [st|#{f} - #{t}|]
 
-instance ToText a => ToText (Ranged a) where
+instance (ToText a) => ToText (Ranged a) where
   toText Ranged {rItem = i, range = r} = toText [st|#{r} #{i}|]
 
-instance ToText a => ToText (OcRanged a) where
+instance (ToText a) => ToText (OcRanged a) where
   toText OcRanged {ocItem = i, ocRange = r} = toText [st|#{r} #{i}|]

@@ -3,24 +3,29 @@ module Main.Syntax.Parsing.Tree
     SyntaxTree,
     Word (SingleWord, MultiWord),
     Number (Number, int, dec, exp),
-    Expression
+    TokenExpr
       ( AlphaNumExpr,
         NonAlphaNumExpr,
         NumberExpr,
         TextExpr,
         NestedExpr,
-        HigherPriorityExpr
+        HigherPriorityExpr,
+        SigHigherPriorityExpr
       ),
+    ExprsBlock (ExprsBlock),
     FunctionSignatureItem (FunctionName, FunctionArgument),
-    FunctionSignature (FunctionSignature),
+    FunctionSignature (FunctionSignature, fsURL, fsItems),
     FunctionBody (FunctionBody),
   )
 where
 
 import Data.Eq (Eq)
 import Data.Function ((.))
+import Data.Hashable (Hashable)
 import Data.Kind (Type)
+import Data.List.NonEmpty (NonEmpty)
 import Data.Maybe (Maybe)
+import Data.Ord (Ord)
 import Data.String (fromString)
 import Data.Text (Text)
 import Deriving.Aeson (CustomJSON (CustomJSON), Generic, ToJSON)
@@ -45,40 +50,67 @@ data Number = Number
     dec :: Maybe Integer,
     exp :: Maybe Integer
   }
-  deriving stock (Eq, Generic)
+  deriving stock (Eq, Ord, Generic)
   deriving (ToJSON) via Vanilla Number
 
-type Expression :: Type
-data Expression
+instance Hashable Number
+
+type ExprsBlock :: Type
+newtype ExprsBlock = ExprsBlock [TokenExpr]
+  deriving stock (Eq, Ord, Generic)
+  deriving (ToJSON) via Vanilla ExprsBlock
+
+instance Hashable ExprsBlock
+
+instance Show ExprsBlock where
+  show = showYaml
+
+instance ToText (NonEmpty ExprsBlock) where
+  toText = fromString . showYaml
+
+type TokenExpr :: Type
+data TokenExpr
   = AlphaNumExpr (Ranged Text)
   | NonAlphaNumExpr (Ranged Text)
   | NumberExpr (Ranged Number)
   | TextExpr (Ranged Text)
-  | NestedExpr [Expression]
-  | HigherPriorityExpr (OcRanged [Expression])
-  deriving stock (Eq, Generic)
-  deriving (ToJSON) via Vanilla Expression
+  | HigherPriorityExpr (OcRanged [ExprsBlock])
+  | SigHigherPriorityExpr (OcRanged [TokenExpr])
+  | NestedExpr [ExprsBlock]
+  deriving stock (Eq, Ord, Generic)
+  deriving (ToJSON) via Vanilla TokenExpr
+
+instance Hashable TokenExpr
 
 type FunctionBody :: Type
-newtype FunctionBody = FunctionBody (Ranged [Expression])
+newtype FunctionBody = FunctionBody (Ranged [ExprsBlock])
   deriving stock (Eq, Generic)
   deriving (ToJSON) via Vanilla FunctionBody
 
 type FunctionSignatureItem :: Type
-data FunctionSignatureItem = FunctionName Expression | FunctionArgument Expression
+data FunctionSignatureItem = FunctionName TokenExpr | FunctionArgument TokenExpr
   deriving stock (Eq, Generic)
   deriving (ToJSON) via Vanilla FunctionSignatureItem
 
+instance Hashable FunctionSignatureItem
+
 type FunctionSignature :: Type
-newtype FunctionSignature = FunctionSignature [FunctionSignatureItem]
+data FunctionSignature = FunctionSignature
+  { fsItems :: [FunctionSignatureItem],
+    fsURL :: Text
+  }
   deriving stock (Eq, Generic)
   deriving (ToJSON) via Vanilla FunctionSignature
+
+instance Hashable FunctionSignature
 
 instance Show FunctionSignature where
   show = showYaml
 
 instance Show FunctionBody where
   show = showYaml
+
+instance Hashable FunctionBody
 
 instance Show FunctionSignatureItem where
   show = showYaml
@@ -91,19 +123,30 @@ data Function = Function
   deriving stock (Eq, Generic)
   deriving (ToJSON) via Vanilla Function
 
+instance Hashable Function
+
 instance ToText Function where
   toText = fromString . showYaml
 
 instance Show Function where
   show = showYaml
 
-instance ToText Expression where
+instance ToText TokenExpr where
   toText = fromString . showYaml
 
-instance Show Expression where
+instance Show TokenExpr where
   show = showYaml
 
-instance ToText [Expression] where
+instance ToText [TokenExpr] where
+  toText = fromString . showYaml
+
+instance ToText [[TokenExpr]] where
+  toText = fromString . showYaml
+
+instance ToText ExprsBlock where
+  toText = fromString . showYaml
+
+instance ToText [ExprsBlock] where
   toText = fromString . showYaml
 
 instance ToText (Ranged Function) where
@@ -113,4 +156,10 @@ type SyntaxTree :: Type
 type SyntaxTree = [Ranged Function]
 
 instance ToText SyntaxTree where
+  toText = fromString . showYaml
+
+instance ToText FunctionSignatureItem where
+  toText = fromString . showYaml
+
+instance ToText FunctionSignature where
   toText = fromString . showYaml

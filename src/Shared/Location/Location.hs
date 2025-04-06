@@ -13,6 +13,7 @@ import Data.Char (Char)
 import Data.Eq (Eq)
 import Data.Function (($))
 import Data.Functor (($>), (<$>))
+import Data.Int (Int)
 import Data.Kind (Type)
 import Data.Ord (Ordering (EQ, GT))
 import Data.Text (Text, pack, singleton)
@@ -75,10 +76,11 @@ keychar indented kc = ranged indented $ singleton <$> char kc
 keyword :: Indent -> Text -> Parser (Ranged Text)
 keyword indented word = ranged indented $ string word
 
-ocRanged :: Indent -> Parser a -> Parser (OcRanged a)
+ocRanged :: Indent -> (Int -> Parser a) -> Parser (OcRanged a)
 ocRanged indented parser = do
   oRanged <- keychar indented '('
-  ocItem <- parser
+  let bracketLine = line $ from $ range oRanged
+  ocItem <- parser bracketLine
   cRanged <- keychar Indented ')'
   let ocRange =
         Range

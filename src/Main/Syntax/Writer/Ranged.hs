@@ -4,89 +4,96 @@ module Main.Syntax.Writer.Ranged
 where
 
 import Data.Bool (Bool (False, True), not)
-import Data.Foldable (Foldable (foldr))
+import Data.Foldable (Foldable (foldr, null))
 import Data.Function (($), (.))
 import Data.Int (Int)
+import Data.List (head, last)
 import Data.List as L (filter, length, map)
 import Data.Maybe (Maybe (Just, Nothing))
 import Data.Monoid (Monoid (mconcat))
 import Data.Text as T (Text, concat)
 import GHC.Num (Num ((+), (-)))
+import Main.Syntax.Parsing.Shared (getRange)
 import Main.Syntax.Parsing.Tree
-  ( Expression
+  ( ExprsBlock (ExprsBlock),
+    Function (Function, fBody, fSignature),
+    FunctionBody (FunctionBody),
+    FunctionSignature (FunctionSignature, fsItems),
+    FunctionSignatureItem (FunctionArgument, FunctionName),
+    Number (Number, dec, exp, int),
+    TokenExpr
       ( AlphaNumExpr,
         HigherPriorityExpr,
         NestedExpr,
         NonAlphaNumExpr,
         NumberExpr,
+        SigHigherPriorityExpr,
         TextExpr
       ),
-    Function (Function, fBody, fSignature),
-    FunctionBody (FunctionBody),
-    FunctionSignature (FunctionSignature),
-    FunctionSignatureItem (FunctionArgument, FunctionName),
-    Number (Number, dec, exp, int),
   )
 import Shared.Location.Data
   ( OcRanged
       ( OcRanged,
-        cSpaces,
-        oSpaces,
         ocItem,
         ocRange
       ),
-    Ranged (rItem, rSpaces, range),
+    Range (Range, from, to),
+    Ranged (rItem, range),
   )
-import Shared.Text.Utils (hasNL, indent, nL)
-import Text.Shakespeare.Text (st)
+import Shared.Text.Utils (indent, nL)
+import Text.Shakespeare.Text (ToText (toText), st)
 import Text.Show (Show (show))
 
-nlT :: Text
-nlT = [st|new line|]
-
-nlText :: Int -> Text -> Text
-nlText ind spaces =
-  let text = if hasNL spaces then [st|#{nL}#{indent ind}#{nlT}|] else ""
-   in [st|#{text}#{nL}#{indent ind}|]
+nlText :: Int -> Text
+nlText ind = [st|#{nL}#{indent ind}|]
 
 writeRanged :: Text -> (Int -> a -> Text) -> Ranged a -> Int -> Text
 writeRanged label builder ranged ind =
   let nextInd = ind + 1
       built = builder nextInd $ rItem ranged
-      nlTT = nlText ind (rSpaces ranged)
+      nlTT = nlText ind
    in [st|#{nlTT}#{range ranged} #{label}#{built}|]
 
 writeOcRanged :: Text -> (Int -> a -> Text) -> OcRanged a -> Int -> Text
 writeOcRanged label builder ranged ind =
   let nextInd = ind + 1
       built = builder nextInd $ ocItem ranged
-      onlTT = nlText ind (oSpaces ranged)
-      cnlTT = if hasNL (cSpaces ranged) then [st|#{nL}#{indent nextInd}#{nlT}|] else ""
-   in [st|#{onlTT}#{ocRange ranged} #{label}#{built}#{cnlTT}|]
+      onlTT = nlText ind
+   in -- cnlTT = if hasNL (cSpaces ranged) then [st|#{nL}#{indent nextInd}|] else ""
+      [st|#{onlTT}#{ocRange ranged} #{label}#{built}|]
 
 writeSingleWord :: Int -> Text -> Text
 writeSingleWord ind word = [st|#{nL}#{indent ind}#{word}|]
+
+writeExprsBlock :: Int -> ExprsBlock -> Text
+writeExprsBlock ind (ExprsBlock tokens) =
+  let nextInd = ind + 1
+      exprsText = mconcat $ map (`writeExpr` nextInd) tokens
+      exprsRange = if null tokens then "" else toText $ Range {from = from $ getRange $ head tokens, to = to $ getRange $ last tokens}
+   in [st|#{nL}#{indent ind}#{exprsRange} expressions block#{exprsText}|]
 
 writeSignatureItem :: Int -> Int -> FunctionSignatureItem -> Int -> (Int, Int, Text)
 writeSignatureItem nameNum argNum (FunctionName expression) ind =
   ( nameNum - 1,
     argNum,
-    let functionNameText = writeExpression expression (ind + 1)
-     in [st|#{nL}#{indent ind}name #{nameNum}#{functionNameText}|]
+    let functionNameText = writeExpr expression (ind + 1)
+        fnRange = getRange expression
+     in [st|#{nL}#{indent ind}#{fnRange} name #{nameNum}#{functionNameText}|]
   )
 writeSignatureItem nameNum argNum (FunctionArgument expression) ind =
   ( nameNum,
     argNum - 1,
     let nextInd = ind + 1
         expressionText = case expression of
-          (HigherPriorityExpr OcRanged {ocItem = subExpressions}) ->
-            case subExpressions of
+          (HigherPriorityExpr OcRanged {ocItem = subExprs}) ->
+            case subExprs of
               [] -> [st|#{nL}#{indent nextInd}empty argument|]
               expressions ->
-                let expressionsText = T.concat $ map (`writeExpression` (nextInd + 1)) expressions
+                let expressionsText = T.concat $ map (writeExprsBlock (nextInd + 1)) expressions
                  in [st|#{nL}#{indent nextInd}argument in brackets #{argNum}#{expressionsText}|]
-          expr -> writeExpression expr nextInd
-     in [st|#{nL}#{indent ind}argument #{argNum}#{expressionText}|]
+          expr -> writeExpr expr nextInd
+        argRange = getRange expression
+     in [st|#{nL}#{indent ind}#{argRange} argument #{argNum}#{expressionText}|]
   )
 
 isName :: FunctionSignatureItem -> Bool
@@ -109,16 +116,24 @@ writeFunctionSignatureItems ind constructs =
       argNum = itemsCount isArg constructs
    in mconcat $ (\(_, _, _, r) -> r) $ foldr sigItemAggregator (nameNum, argNum, ind, []) constructs
 
-writeSignature :: FunctionSignature -> Int -> Text
-writeSignature (FunctionSignature items) ind =
-  let nextInd = ind + 1
-      itemsText = writeFunctionSignatureItems nextInd items
-   in [st|#{nL}#{indent ind}function signature#{itemsText}|]
+getFsiRange :: FunctionSignatureItem -> Range
+getFsiRange (FunctionName expr) = getRange expr
+getFsiRange (FunctionArgument expr) = getRange expr
 
-writeExpression :: Expression -> Int -> Text
-writeExpression (AlphaNumExpr ranged) = writeRanged "alpha numberic word" writeSingleWord ranged
-writeExpression (NonAlphaNumExpr ranged) = writeRanged "non alpha numberic word" writeSingleWord ranged
-writeExpression (NumberExpr ranged) =
+getExprsBlockRange :: ExprsBlock -> Range
+getExprsBlockRange (ExprsBlock exprs) = Range {from = from $ getRange $ head exprs, to = to $ getRange $ last exprs}
+
+writeSignature :: FunctionSignature -> Int -> Text
+writeSignature FunctionSignature {fsItems} ind =
+  let nextInd = ind + 1
+      itemsText = writeFunctionSignatureItems nextInd fsItems
+      itemsRange = Range {from = from $ getFsiRange $ head fsItems, to = to $ getFsiRange $ last fsItems}
+   in [st|#{nL}#{indent ind}#{itemsRange} function signature#{itemsText}|]
+
+writeExpr :: TokenExpr -> Int -> Text
+writeExpr (AlphaNumExpr ranged) = writeRanged "alpha numberic word" writeSingleWord ranged
+writeExpr (NonAlphaNumExpr ranged) = writeRanged "non alpha numberic word" writeSingleWord ranged
+writeExpr (NumberExpr ranged) =
   writeRanged
     "number"
     ( \ind Number {int, dec, exp} ->
@@ -132,18 +147,21 @@ writeExpression (NumberExpr ranged) =
          in [st|#{nL}#{indent ind}integer#{nL}#{indent nextInd}#{show int}#{decimalText}#{exponentText}|]
     )
     ranged
-writeExpression (TextExpr ranged) = writeRanged "text" writeSingleWord ranged
-writeExpression (NestedExpr expressions) = \ind ->
-  let expressionsText = mconcat $ map (\e -> writeExpression e (ind + 2)) expressions
-   in [st|#{nL}#{indent ind}nested expressions#{expressionsText}|]
-writeExpression (HigherPriorityExpr ranged) =
-  writeOcRanged "higher priority expressions" (\nextInd expr -> mconcat $ map (`writeExpression` nextInd) expr) ranged
+writeExpr (TextExpr ranged) = writeRanged "text" writeSingleWord ranged
+writeExpr (NestedExpr expressions) = \ind ->
+  let expressionsText = mconcat $ map (writeExprsBlock (ind + 1)) expressions
+      exprRange = Range {from = from $ getExprsBlockRange $ head expressions, to = to $ getExprsBlockRange $ last expressions}
+   in [st|#{nL}#{indent ind}#{exprRange} nested expressions#{expressionsText}|]
+writeExpr (HigherPriorityExpr ranged) =
+  writeOcRanged "higher priority expressions" (\nextInd expr -> mconcat $ map (writeExprsBlock nextInd) expr) ranged
+writeExpr (SigHigherPriorityExpr ranged) =
+  writeOcRanged "higher priority expressions" (\nextInd expr -> mconcat $ map (`writeExpr` nextInd) expr) ranged
 
-writeBody :: Ranged [Expression] -> Int -> Text
+writeBody :: Ranged [ExprsBlock] -> Int -> Text
 writeBody =
   writeRanged
     "function body"
-    (\nextInd expression -> let expressionTexts = map (`writeExpression` nextInd) expression in mconcat expressionTexts)
+    (\nextInd expression -> let expressionTexts = map (writeExprsBlock nextInd) expression in mconcat expressionTexts)
 
 writeFunction :: Ranged Function -> Int -> Text
 writeFunction ranged =

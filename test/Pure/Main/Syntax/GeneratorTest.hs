@@ -14,12 +14,12 @@ import Data.Maybe (Maybe (Just, Nothing))
 import Data.Monoid (Monoid (mconcat))
 import Data.Text (Text, pack)
 import GHC.Integer (Integer, absInteger)
-import Main.Syntax.Parsing.Parser (syntaxParser)
+import Main.Syntax.Parsing.Parser (syntaxParsing)
 import Main.Syntax.Writer.Ranged as R (writeFunctions)
 import Main.Syntax.Writer.Source as F (writeFunctions)
 import Pure.Main.Syntax.Shared (runParser)
 import Shared.Conditional.Debug.Trace (trace)
-import Shared.Errors (Errors (MkErrors))
+import Shared.Errors (Errors (Errors))
 import Shared.Text.Utils (nL, tab)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck
@@ -61,7 +61,6 @@ genNonAlphaNumWord = do
           return '}',
           return '\'',
           return '%',
-          return '#',
           return ':',
           return ';',
           return '.',
@@ -69,7 +68,6 @@ genNonAlphaNumWord = do
           return '!',
           return '@',
           return '$',
-          return '_',
           return '`',
           return '\\'
         ]
@@ -100,7 +98,7 @@ genSpaces =
 genAlphaNumWord :: Gen Text
 genAlphaNumWord = do
   alphaSize <- genSize
-  head <- vectorOf alphaSize $ elements (['A' .. 'Z'] ++ ['a' .. 'z'])
+  head <- vectorOf alphaSize $ elements ('_' : (['A' .. 'Z'] ++ ['a' .. 'z']))
   numericSize <- elements [0 .. 1]
   tail <- vectorOf numericSize $ elements ['0' .. '9']
   return $ pack $ head ++ tail
@@ -129,17 +127,19 @@ genInBracketsSignatureWord = do
 genSignatureWord :: Gen Text
 genSignatureWord = oneof [genOutsideOfBracketsSignatureWord genAlphaNumWord, genInBracketsSignatureWord]
 
+genHeadWord :: Gen Text
+genHeadWord = oneof [genSignatureWord, return "#"]
+
 genComplexFunctionSignatureShared :: Gen Text
 genComplexFunctionSignatureShared = do
   size <- genSize
-  headWord <- genSignatureWord
+  headWord <- genHeadWord
   tailIds <- vectorOf size $ do
     spaces <- genSpaces
     word <- genSignatureWord
     return [st|#{spaces}#{word}|]
   let tailWordsTxt = mconcat tailIds
-  let escapedHashHead = if headWord == "#" then "##" else headWord
-  return [st|#{escapedHashHead}#{tailWordsTxt}|]
+  return [st|#{headWord}#{tailWordsTxt}|]
 
 genFunctionSignature :: Gen Text
 genFunctionSignature =
@@ -233,7 +233,7 @@ syntaxGeneratorTest =
     "Syntax generator tests"
     [ testProperty "" $ \(Source source) ->
         let traceText = [st|Source:#{nL}#{source}|]
-            parsedResult = trace traceText $ runParser source syntaxParser
+            parsedResult = trace traceText $ runParser source (syntaxParsing "")
          in case parsedResult of
               Right (tree, trailingSpaces) ->
                 let writtenBack = F.writeFunctions tree
@@ -246,5 +246,5 @@ syntaxGeneratorTest =
               Left errors ->
                 trace [st|ERRORS: #{errors}|] $
                   errors
-                    == MkErrors [] -- trace [st|ERRORS: #{errors}|]
+                    == Errors [] -- trace [st|ERRORS: #{errors}|]
     ]

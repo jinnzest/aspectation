@@ -1,16 +1,16 @@
 module Shared.Errors
-  ( Errors (MkErrors),
+  ( Errors (Errors),
     errors,
     Error
-      ( MkMultiRangedError,
+      ( MultiRangedError,
         mrError,
-        MkRangedError,
+        RangedError,
         rError,
         range,
-        MkPositionedError,
+        PositionedError,
         position,
         pError,
-        MkError
+        Error
       ),
   )
 where
@@ -29,7 +29,7 @@ import Text.Shakespeare.Text (ToText (toText))
 import Text.Show (Show (show))
 
 type Errors :: Type
-newtype Errors = MkErrors
+newtype Errors = Errors
   { errors :: [Error]
   }
   deriving stock (Eq, Generic)
@@ -37,10 +37,10 @@ newtype Errors = MkErrors
 
 type Error :: Type
 data Error
-  = MkMultiRangedError {ranges :: [Range], mrError :: Text}
-  | MkRangedError {range :: Range, rError :: Text}
-  | MkPositionedError {position :: Position, pError :: Text}
-  | MkError Text
+  = MultiRangedError {ranges :: [Range], mrError :: Text}
+  | RangedError {range :: Range, rError :: Text}
+  | PositionedError {position :: Position, pError :: Text}
+  | Error Text
   deriving stock (Eq, Generic)
   deriving (ToJSON) via Vanilla Error
 

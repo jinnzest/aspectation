@@ -4,8 +4,8 @@ module Pure.Main.Tests
 where
 
 import Pure.Main.Syntax.GeneratorTest (syntaxGeneratorTest)
-import Pure.Main.Syntax.ParserErrorTests (syntaxParserErrorTests)
-import Pure.Main.Syntax.ParserTests (syntaxParserTests)
+import Pure.Main.Syntax.ParserErrorTests (syntaxParsingErrorTests)
+import Pure.Main.Syntax.ParserTests (syntaxParsingTests)
 import Pure.Main.Syntax.Writer.RangedTests (syntaxRangedWriterTests)
 import Pure.Main.Syntax.Writer.SourceTests (syntaxFormattedWriterTests)
 import Test.Tasty (TestTree, testGroup)
@@ -15,8 +15,8 @@ mainTests =
   testGroup
     "Main pure tests"
     [ syntaxRangedWriterTests,
-      syntaxParserTests,
+      syntaxParsingTests,
       syntaxFormattedWriterTests,
-      syntaxParserErrorTests,
+      syntaxParsingErrorTests,
       syntaxGeneratorTest
     ]

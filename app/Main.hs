@@ -4,8 +4,8 @@ import Control.Monad (return)
 import Control.Monad.Except (runExceptT)
 import Data.Either (Either (Left, Right))
 import Data.Function (($))
-import Data.List as L (head)
-import Data.Text (pack)
+import Data.List as L (head, last)
+import Data.Text (pack, splitOn)
 import Data.Text.IO as TIO (putStrLn)
 import Main.Syntax.Parsing.ParserIO (parseSyntaxIO)
 import Shared.Text.Utils (nL)
@@ -21,8 +21,9 @@ main = do
   case args of
     [] -> TIO.putStrLn [st|Usage: #{name} path-to-source-file|]
     _ -> do
-      let sourceFile = pack $ L.head args
-      resultEx <- runExceptT $ parseSyntaxIO sourceFile
+      let sourceFilePath = pack $ L.head args
+      let fileName = L.last $ splitOn "/" sourceFilePath
+      resultEx <- runExceptT $ parseSyntaxIO sourceFilePath [st|main.#{fileName}|]
       case resultEx of
         Left err -> TIO.putStrLn [st|Errors: #{nL}#{err}|]
         Right (tree, _) -> do

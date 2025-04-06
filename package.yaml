@@ -1,5 +1,5 @@
 name: aspectation
-version: 0.1.0.0
+version: 0.2.0.0
 github: githubuser/aspectation
 license-file: [LICENSE-MIT, LICENSE-APACHE]
 author: jinnzest
@@ -22,7 +22,7 @@ dependencies:
 - aeson
 - aeson-yaml
 - deriving-aeson
-- extra
+- hashable
 library:
     source-dirs:
         - src

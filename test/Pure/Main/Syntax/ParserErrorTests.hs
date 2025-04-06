@@ -1,5 +1,5 @@
 module Pure.Main.Syntax.ParserErrorTests
-  ( syntaxParserErrorTests,
+  ( syntaxParsingErrorTests,
   )
 where
 
@@ -9,11 +9,12 @@ import Data.Eq (Eq ((==)))
 import Data.Function (($))
 import Data.List (foldr, head, tail)
 import Data.String (String)
-import Data.Text (Text, pack)
+import Data.Text (Text, pack, unpack)
 import Data.Tuple (snd)
-import Main.Syntax.Parsing.Parser (syntaxParser)
-import Pure.Main.Syntax.Shared (runParser, withBorder)
-import Shared.Errors (Error (MkError), Errors (MkErrors))
+import Main.Syntax.Parsing.Parser (syntaxParsing)
+import Pure.Main.Syntax.Shared (runParser)
+import Shared.Errors (Error (Error), Errors (Errors))
+import Shared.Text.Utils (withBorder)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (Assertion, assertEqual, testCase)
 import Text.Shakespeare.Text (sbt)
@@ -34,8 +35,8 @@ mergeSpaces txt =
 
 assertParsedErrors :: Text -> Text -> Assertion
 assertParsedErrors source expected =
-  let parsedResult = runParser source syntaxParser
-      expectedText = mergeSpaces $ show (MkErrors [MkError expected])
+  let parsedResult = runParser source (syntaxParsing "")
+      expectedText = mergeSpaces $ show (Errors [Error expected])
    in case parsedResult of
         Left actualText ->
           assertEqual "" expectedText (mergeSpaces $ show actualText)
@@ -43,10 +44,10 @@ assertParsedErrors source expected =
 
 testCaseParseError :: Text -> Text -> TestTree
 testCaseParseError source expected =
-  testCase (withBorder source) $ assertParsedErrors source expected
+  testCase (unpack $ withBorder source) $ assertParsedErrors source expected
 
-syntaxParserErrorTests :: TestTree
-syntaxParserErrorTests =
+syntaxParsingErrorTests :: TestTree
+syntaxParsingErrorTests =
   testGroup
     "Main syntax parser error test"
     [ testCaseParseError
@@ -57,6 +58,14 @@ syntaxParserErrorTests =
             |        |         ^
             |      unexpected end of input
             |      expecting "->", '(', a number, a text, an identifier, carriage return, newline, space, or tab
+            |],
+      testCaseParseError
+        " 1"
+        [sbt|1:2:
+            |        |
+            |      1 | 1
+            |        | ^
+            |      incorrect indentation (got 2, should be equal to 1)
             |],
       testCaseParseError
         "noBodyFunc ="
@@ -74,7 +83,7 @@ syntaxParserErrorTests =
             |      1 | brokenBodyFunc->(
             |        |                  ^
             |      unexpected end of input
-            |      expecting '(', ')', a number, a text, an identifier, carriage return, newline, space, or tab
+            |      expecting '(', a number, a text, an identifier, carriage return, newline, space, or tab
             |],
       testCaseParseError
         "f->(123456789"
@@ -110,7 +119,7 @@ syntaxParserErrorTests =
         |      1 | (xyz->1
         |        |     ^
         |      unexpected '-'
-        |      expecting ')', an identifier, carriage return, newline, space, or tab
+        |      expecting ')', a hash, an identifier, carriage return, newline, space, or tab
         |],
       testCaseParseError
         "->123f"
@@ -119,7 +128,7 @@ syntaxParserErrorTests =
         |      1 | ->123f
         |        |  ^
         |      unexpected '>'
-        |      expecting carriage return, integer, newline, space, or tab
+        |      expecting a hash, carriage return, integer, newline, space, or tab
         |],
       testCaseParseError
         "#"
@@ -137,5 +146,23 @@ syntaxParserErrorTests =
         |      1 |  x
         |        |  ^
         |      incorrect indentation (got 2, should be equal to 1)
+        |],
+      testCaseParseError
+        "f (_ _)"
+        [sbt|1:3:
+        |        |
+        |      1 |  f (_ _)
+        |        |    ^^
+        |      unexpected "(_"
+        |      expecting "->", carriage return, newline, space, or tab
+        |],
+      testCaseParseError
+        "function having an arg (arg) and a text \"text\" in name -> 1"
+        [sbt|1:41:
+        |        |
+        |      1 |  function having an arg (arg) and a text "text" in name -> 1
+        |        |                                          ^^
+        |      unexpected ""t"
+        |      expecting "->", carriage return, newline, space, or tab
         |]
     ]
